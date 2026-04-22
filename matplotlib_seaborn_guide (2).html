@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matplotlib & Seaborn — Chart Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: #2a2a3e;
+    --mpl: #11a8cd;
+    --mpl-dim: #0d7fa0;
+    --sns: #e84393;
+    --sns-dim: #b0306e;
+    --accent: #f5c842;
+    --text: #e8e8f0;
+    --muted: #8888aa;
+    --green: #3ddb8a;
+    --orange: #ff7c3c;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Lora', serif;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 60px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 20% 40%, rgba(17,168,205,0.15) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 40% at 80% 60%, rgba(232,67,147,0.15) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 40% at 50% 10%, rgba(245,200,66,0.07) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .grid-bg {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(42,42,62,0.4) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(42,42,62,0.4) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+  }
+
+  .hero-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: rgba(245,200,66,0.1);
+    border: 1px solid rgba(245,200,66,0.3);
+    padding: 6px 16px;
+    border-radius: 20px;
+    margin-bottom: 32px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2.8rem, 8vw, 6rem);
+    font-weight: 800;
+    line-height: 1.05;
+    animation: fadeUp 0.7s 0.1s ease both;
+    max-width: 900px;
+  }
+
+  .hero h1 .mpl { color: var(--mpl); }
+  .hero h1 .sns { color: var(--sns); }
+  .hero h1 .amp { color: var(--muted); font-weight: 400; }
+
+  .hero-sub {
+    font-family: 'Lora', serif;
+    font-style: italic;
+    font-size: 1.15rem;
+    color: var(--muted);
+    max-width: 560px;
+    margin-top: 20px;
+    animation: fadeUp 0.7s 0.2s ease both;
+  }
+
+  .hero-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 48px;
+    animation: fadeUp 0.7s 0.3s ease both;
+  }
+
+  .hero-nav a {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    transition: all 0.2s;
+    background: var(--surface);
+  }
+  .hero-nav a:hover { border-color: var(--accent); color: var(--accent); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== SECTIONS ===== */
+  section { padding: 80px 24px; max-width: 1200px; margin: 0 auto; }
+
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 700;
+    margin-bottom: 48px;
+    line-height: 1.2;
+  }
+
+  /* ===== LIBRARY CARDS ===== */
+  .lib-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 64px;
+  }
+  @media(max-width:700px){ .lib-cards { grid-template-columns:1fr; } }
+
+  .lib-card {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px;
+    background: var(--surface);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .lib-card:hover { transform: translateY(-4px); }
+  .lib-card.mpl { border-top: 3px solid var(--mpl); box-shadow: 0 0 40px rgba(17,168,205,0.07); }
+  .lib-card.sns { border-top: 3px solid var(--sns); box-shadow: 0 0 40px rgba(232,67,147,0.07); }
+
+  .lib-card-dot {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    margin-bottom: 20px;
+  }
+  .mpl .lib-card-dot { background: rgba(17,168,205,0.15); color: var(--mpl); }
+  .sns .lib-card-dot { background: rgba(232,67,147,0.15); color: var(--sns); }
+
+  .lib-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .lib-card p { color: var(--muted); font-size: 0.95rem; }
+
+  .lib-card .tags {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px;
+  }
+  .tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    background: var(--surface2);
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+
+  /* ===== CHART GRID ===== */
+  .chart-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+  }
+
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .chart-card:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+
+  .chart-preview {
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .chart-body { padding: 20px 22px 22px; }
+
+  .chart-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .chart-desc { color: var(--muted); font-size: 0.88rem; margin-bottom: 14px; }
+
+  .chart-meta {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px;
+  }
+
+  .badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+  }
+  .badge.mpl { background: rgba(17,168,205,0.15); color: var(--mpl); }
+  .badge.sns { background: rgba(232,67,147,0.15); color: var(--sns); }
+  .badge.both { background: rgba(245,200,66,0.12); color: var(--accent); }
+  .badge.when { background: rgba(61,219,138,0.12); color: var(--green); }
+
+  .code-block {
+    background: #0d0d14;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    color: #c8c8e8;
+    line-height: 1.6;
+    overflow-x: auto;
+    white-space: pre;
+  }
+
+  .code-block .kw { color: var(--sns); }
+  .code-block .fn { color: var(--mpl); }
+  .code-block .st { color: var(--accent); }
+  .code-block .cm { color: #555575; font-style: italic; }
+  .code-block .nm { color: var(--green); }
+
+  /* ===== COMPARE TABLE ===== */
+  .compare-wrap {
+    overflow-x: auto;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+
+  thead tr {
+    background: var(--surface2);
+  }
+
+  thead th {
+    padding: 16px 20px;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  thead th.mpl-h { color: var(--mpl); }
+  thead th.sns-h { color: var(--sns); }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(42,42,62,0.6);
+    transition: background 0.15s;
+  }
+  tbody tr:hover { background: var(--surface2); }
+  tbody tr:last-child { border-bottom: none; }
+
+  tbody td {
+    padding: 14px 20px;
+    vertical-align: top;
+  }
+
+  tbody td:first-child {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  .check { color: var(--green); }
+  .cross { color: #ff5555; }
+  .neutral { color: var(--muted); }
+
+  /* ===== DECISION FLOW ===== */
+  .decision-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media(max-width:700px){ .decision-grid { grid-template-columns:1fr; } }
+
+  .decision-card {
+    padding: 28px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .decision-card.use-mpl { border-left: 3px solid var(--mpl); }
+  .decision-card.use-sns { border-left: 3px solid var(--sns); }
+
+  .decision-card h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .decision-card.use-mpl h4 { color: var(--mpl); }
+  .decision-card.use-sns h4 { color: var(--sns); }
+
+  .decision-card ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .decision-card ul li {
+    font-size: 0.88rem;
+    color: var(--muted);
+    padding-left: 18px;
+    position: relative;
+  }
+  .decision-card ul li::before {
+    content: '→';
+    position: absolute; left: 0;
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+
+  /* ===== DIVIDER ===== */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0 24px;
+  }
+
+  /* ===== FOOTER ===== */
+  footer {
+    text-align: center;
+    padding: 40px 24px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+  }
+
+  /* ===== MINI CHART VISUALS (CSS only) ===== */
+  .vis-bar {
+    display: flex; align-items: flex-end; gap: 5px; height: 70px; padding: 0 16px;
+  }
+  .vis-bar div {
+    flex: 1; border-radius: 4px 4px 0 0; opacity: 0.85;
+    animation: growBar 1s ease both;
+  }
+  @keyframes growBar {
+    from { transform: scaleY(0); transform-origin: bottom; }
+    to   { transform: scaleY(1); }
+  }
+
+  .vis-line {
+    width: 90%; height: 60px; position: relative;
+  }
+  .vis-line svg { width: 100%; height: 100%; }
+
+  .vis-scatter {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 6px; padding: 10px;
+  }
+  .vis-scatter span {
+    width: 8px; height: 8px; border-radius: 50%;
+    display: inline-block; opacity: 0.8;
+  }
+
+  .vis-pie {
+    width: 70px; height: 70px;
+    border-radius: 50%;
+    background: conic-gradient(var(--mpl) 0% 35%, var(--sns) 35% 60%, var(--accent) 60% 80%, var(--green) 80% 100%);
+    box-shadow: 0 0 20px rgba(17,168,205,0.3);
+  }
+
+  .vis-heat {
+    display: grid; grid-template-columns: repeat(5,1fr); gap: 3px; padding: 8px;
+  }
+  .vis-heat div {
+    height: 18px; border-radius: 2px;
+  }
+
+  .vis-box {
+    display: flex; gap: 12px; align-items: center; justify-content: center;
+    padding: 10px;
+  }
+  .vis-box .bx {
+    width: 28px;
+    border-radius: 2px;
+    border: 2px solid;
+    position: relative;
+  }
+
+  .vis-violin {
+    display: flex; gap: 14px; align-items: center; justify-content: center;
+  }
+  .vis-violin .vn {
+    width: 22px; height: 70px; border-radius: 50% 50% 50% 50% / 30% 30% 70% 70%;
+    opacity: 0.8;
+  }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="grid-bg"></div>
+  <div class="hero-badge">Python Data Visualization</div>
+  <h1><span class="mpl">Matplotlib</span> <span class="amp">&</span> <span class="sns">Seaborn</span><br>Chart Guide</h1>
+  <p class="hero-sub">What every chart is, when to use it, how they compare, and code to get started instantly.</p>
+  <nav class="hero-nav">
+    <a href="#libraries">Libraries</a>
+    <a href="#charts">All Charts</a>
+    <a href="#datamatrix">Data Types</a>
+    <a href="#compare">MPL vs SNS</a>
+    <a href="#decide">When to Use</a>
+  </nav>
+</div>
+
+<hr class="divider">
+
+<!-- LIBRARIES -->
+<section id="libraries">
+  <p class="section-label">01 — Overview</p>
+  <h2 class="section-title">Two Libraries, One Goal</h2>
+
+  <div class="lib-cards">
+    <div class="lib-card mpl">
+      <div class="lib-card-dot">MPL</div>
+      <h3>Matplotlib</h3>
+      <p>The foundational Python plotting library. Gives you <strong>complete control</strong> over every element — axes, ticks, colors, labels, sizes. Verbose but infinitely flexible. Created by John Hunter in 2003.</p>
+      <div class="tags">
+        <span class="tag">Low-level</span>
+        <span class="tag">Full control</span>
+        <span class="tag">Any chart type</span>
+        <span class="tag">Publication plots</span>
+        <span class="tag">Embedding in GUIs</span>
+      </div>
+    </div>
+    <div class="lib-card sns">
+      <div class="lib-card-dot">SNS</div>
+      <h3>Seaborn</h3>
+      <p>A <strong>high-level wrapper</strong> built on top of Matplotlib. Makes statistical charts beautiful and easy. Works natively with Pandas DataFrames. Less code, smarter defaults, built-in themes.</p>
+      <div class="tags">
+        <span class="tag">High-level</span>
+        <span class="tag">Statistical</span>
+        <span class="tag">DataFrame-native</span>
+        <span class="tag">Beautiful defaults</span>
+        <span class="tag">EDA / Analysis</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="code-block"><span class="cm"># Installation</span>
+pip install matplotlib seaborn
+
+<span class="cm"># Standard imports used throughout this guide</span>
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> <span class="nm">plt</span>
+<span class="kw">import</span> seaborn <span class="kw">as</span> <span class="nm">sns</span>
+<span class="kw">import</span> pandas <span class="kw">as</span> <span class="nm">pd</span>
+<span class="kw">import</span> numpy <span class="kw">as</span> <span class="nm">np</span>
+
+<span class="nm">sns</span>.<span class="fn">set_theme</span>(style=<span class="st">"darkgrid"</span>)   <span class="cm"># Apply Seaborn theme globally</span></div>
+</section>
+
+<hr class="divider">
+
+<!-- CHARTS -->
+<section id="charts">
+  <p class="section-label">02 — Chart Types</p>
+  <h2 class="section-title">Every Chart, Explained</h2>
+
+  <div class="chart-grid">
+
+    <!-- BAR CHART -->
+    <div class="chart-card">
+      <div class="chart-preview" style="background:linear-gradient(135deg,#0d1a20,#0a1520);">
+        <svg viewBox="0 0 220 105" style="width:92%;height:95px;display:block">
+          <!-- 6 bars with different heights -->
+          <rect x="12"  y="52" width="28" height="40" rx="3 3 0 0" fill="rgba(17,168,205,0.75)"/>
+          <rect x="48"  y="28" width="28" height="64" rx="3 3 0 0" fill="rgba(17,168,205,0.85)"/>
+          <rect x="84"  y="40" width="28" height="52" rx="3 3 0 0" fill="rgba(17,168,205,0.80)"/>
+          <rect x="120" y="14" width="28" height="78" rx="3 3 0 0" fill="#11a8cd"/>
+          <rect x="156" y="62" width="28" height="30" rx="3 3 0 0" fill="rgba(17,168,205,0.70)"/>
+          <rect x="192" y="34" width="22" height="58" rx="3 3 0 0" fill="rgba(17,168,205,0.80)"/>
+          <!-- baseline -->
+          <line x1="6" y1="93" x2="218" y2="93" stroke="rgba(136,136,170,0.35)" stroke-width="1"/>
+          <!-- x-axis labels -->
+          <text x="26"  y="102" text-anchor="middle" font-size="7" fill="rgba(136,136,170,0.8)" font-family="monospace">A</text>
+          <text x="62"  y="102" text-anchor="middle" font-size="7" fill="rgba(136,136,170,0.8)" font-family="monospace">B</text>
+          <text x="98"  y="102" text-anchor="middle" font-size="7" fill="rgba(136,136,170,0.8)" font-family="monospace">C</text>
+          <text x="134" y="102" text-anchor="middle" font-size="7" fill="rgba(136,136,170,0.8)" font-family="monospace">D</text>
+          <text x="170" y="102" text-anchor="middle" font-size="7" fill="rgba(136,136,170,0.8)" font-family="monospace">E</text>
+          <text x="203" y="102" text-anchor="middle" font-size="7" fill="rgba(136,136,170,0.8)" font-family="monospace">F</text>
+          <!-- value labels on top of tallest bar -->
+          <text x="134" y="10" text-anchor="middle" font-size="7" fill="var(--accent)" font-family="monospace">78</text>
+        </svg>
+      </div>
+      <div class="chart-body">
+        <div class="chart-name">Bar Chart</div>
+        <div class="chart-desc">Compares quantities across discrete categories using rectangular bars.</div>
+        <div class="chart-meta">
+          <span class="badge mpl">Matplotlib</span>
+          <span class="badge sns">Seaborn</span>
+          <span class="badge when">Categorical comparison</span>
+        </div>
+        <div class="code-block"><span class="cm"># Matplotlib</span>
+<span class="nm">plt</span>.<span class="fn">bar</span>(categories, values, color=<span class="st">'steelblue'</span>)
+<span class="nm">plt</span>.<span class="fn">show</span>()
+
+<span class="cm"># Seaborn</span>
+<span class="nm">sns</span>.<span class="fn">barplot</span>(data=df, x=<span class="st">'category'</span>, y=<span class="st">'value'</span>)</div>
+      </div>
+    </div>
+
+    <!-- LINE CHART -->
+    <div class="chart-card">
+      <div class="chart-preview" style="background:linear-gradient(135deg,#0d1520,#0a1020);">
+        <svg class="vis-line" viewBox="0 0 200 70">
+          <polyline points="10,55 40,40 70,48 100,20 130,30 160,10 190,22"
+            fill="none" stroke="var(--sns)" stroke-width="2.5" stroke-linecap="round"/>
+          <polyline points="10,60 40,52 70,58 100,45 130,50 160,35 190,42"
+            fill="none" stroke="var(--mpl)" stroke-width="2" stroke-linecap="round" stroke-dasharray="4,3"/>
+        </svg>
+      </div>
+      <div class="chart-body">
+        <div class="chart-name">Line Chart</div>
+        <div class="chart-desc">Shows trends and changes over a continuous variable — most commonly time.</div>
+        <div class="chart-meta">
+          <span class="badge mpl">Matplotlib</span>
+          <span class="badge sns">Seaborn</span>
+          <span class="badge when">Trends over time</span>
+        </div>
+        <div class="code-block"><span class="cm"># Matplotlib</span>
+<span class="nm">plt</span>.<span class="fn">plot</span>(x, y, marker=<span class="st">'o'</span>, linestyle=<span class="st">'-'</span>)
+
+<span class="cm"># Seaborn (with confidence interval)</span>
+<span class="nm">sns</span>.<span class="fn">lineplot</span>(data=df, x=<span class="st">'time'</span>, y=<span class="st">'value'</span>,
+             hue=<span class="st">'group'</span>)</div>
+      </div>
+    </div>
+
+    <!-- SCATTER PLOT -->
+    <div class="chart-card">
+      <div class="chart-preview" style="background:linear-gradient(135deg,#0d1020,#15101f);">
+        <div class="vis-scatter">
+          <span style="background:var(--mpl);width:12px;height:12px"></span>
+          <span style="background:var(--sns);width:7px;height:7px"></span>
+          <span style="background:var(--accent);width:10px;height:10px"></span>
+          <span style="background:var(--mpl);width:6px;height:6px"></span>
+          <span style="background:var(--green);width:14px;height:14px"></span>
+          <span style="background:var(--sns);width:9px;height:9px"></span>
+          <span style="background:var(--accent);width:7px;height:7px"></span>
+          <span style="background:var(--mpl);width:11px;height:11px"></span>
+          <span style="background:var(--green);width:8px;height:8px"></span>
+          <span style="background:var(--sns);width:13px;height:13px"></span>
+        </div>
+      </div>
+      <div class="chart-body">
+        <div class="chart-name">Scatter Plot</div>
+        <div class="chart-desc">Reveals relationships, clusters, and correlations between two numeric variables.</div>
+        <div class="chart-meta">
+          <span class="badge mpl">Matplotlib</span>
+          <span class="badge sns">Seaborn</span>
+          <span class="badge when">Correlation / Clusters</span>
+        </div>
+        <div class="code-block"><span class="cm"># Matplotlib</span>
+<span class="nm">plt</span>.<span class="fn">scatter</span>(x, y, c=colors, s=sizes, alpha=<span class="st">0.7</span>)
+
+<span class="cm"># Seaborn (+ regression line option)</span>
+<span class="nm">sns</span>.<span class="fn">scatterplot</span>(data=df, x=<span class="st">'x'</span>, y=<span class="st">'y'</span>,
+                hue=<span class="st">'category'</span>, size=<span class="st">'value'</span>)</div>
+      </div>
+    </div>
+
+    <!-- HISTOGRAM -->
+    <div class="chart-card">
+      <div class="chart-preview" style="background:linear-gradient(135deg,#0b1a14,#081210);">
+        <svg viewBox="0 0 220 100" style="width:92%;height:90px;display:block">
+          <!-- Bell-curve shaped bars -->
+          <rect x="8"  y="82" width="18" height="10" rx="2" fill="rgba(61,219,138,0.5)"/>
+          <rect x="30" y="70" width="18" height="22" rx="2" fill="rgba(61,219,138,0.6)"/>
+          <rect x="52" y="50" width="18" height="42" rx="2" fill="rgba(61,219,138,0.75)"/>
+          <rect x="74" y="28" width="18" height="64" rx="2" fill="rgba(61,219,138,0.9)"/>
+          <rect x="96" y="18" width="18" height="74" rx="2" fill="#3ddb8a"/>
+          <rect x="118" y="30" width="18" height="62" rx="2" fill="rgba(61,219,138,0.85)"/>
+          <rect x="140" y="52" width="18" height="40" rx="2" fill="rgba(61,219,138,0.7)"/>
+          <rect x="162" y="72" width="18" height="20" rx="2" fill="rgba(61,219,138,0.55)"/>
+          <rect x="184" y="84" width="18" height="8"  rx="2" fill="rgba(61,219,138,0.4)"/>
+          <!-- KDE curve overlay -->
+          <path d="M17,88 C35,85 50,70 65,50 C80,30 90,12 105,10 C120,8 135,28 150,50 C165,72 180,84 200,88"
+            fill="none" stroke="rgba(245,200,66,0.85)" stroke-width="2" stroke-linecap="round"/>
+          <!-- x-axis line -->
+          <line x1="6" y1="93" x2="214" y2="93" stroke="rgba(136,136,170,0.3)" stroke-width="1"/>
+        </svg>
+      </div>
+      <div class="chart-body">
+        <div class="chart-name">Histogram</div>
+        <div class="chart-desc">Displays the distribution of a single numeric variable by grouping into bins.</div>
+        <div class="chart-meta">
+          <span class="badge mpl">Matplotlib</span>
+          <span class="badge sns">Seaborn</span>
+          <span class="badge when">Distribution shape</span>
+        </div>
+        <div class="code-block"><span class="cm"># Matplotlib</span>
+<span class="nm">plt</span>.<span class="fn">hist</span>(data, bins=<span class="st">30</span>, edgecolor=<span class="st">'white'</span>)
+
+<span class="cm"># Seaborn (KDE overlay included)</span>
+<span class="nm">sns</span>.<span class="fn">histplot</span>(data=df, x=<span class="st">'value'</span>, kde=<span class="kw">True</span>,
+             bins=<span class="st">30</span>, hue=<span class="st">'group'</span>)</div>
+      </div>
+    </div>
+
+    <!-- BOX PLOT -->
+    <div class="chart-card">
+      <div class="chart-preview" style="background:linear-gradient(135deg,#100f20,#0d0f1a);">
+        <div class="vis-box">
+          <div style="position:relative;display:flex;align-items:center;flex-direction:column;gap:2px">
+            <div style="width:1px;height:14px;background:var(--mpl)"></div>
+            <div class="bx" style="height:36px;border-color:var(--mpl);background:rgba(17,168,205,0.15)">
+              <div style="position:absolute;top:40%;width:100%;height:2px;background:var(--accent)"></div>
+            </div>
+            <div style="width:1px;height:10px;background:var(--mpl)"></div>
+          </div>
+          <div style="position:relative;display:flex;align-items:center;flex-direction:column;gap:2px">
+            <div style="width:1px;height:8px;background:var(--sns)"></div>
+            <div class="bx" style="height:44px;border-color:var(--sns);background:rgba(232,67,147,0.15)">
+              <div style="position:absolute;top:55%;width:100%;height:2px;background:var(--accent)"></div>
+            </div>
+            <div style="width:1px;height:16px;background:var(--sns)"></div>
+          </div>
+          <div style="position:relative;display:flex;align-items:center;flex-direction:column;gap:2px">
+            <div style="width:1px;height:18px;background:var(--green)"></div>
+            <div class="bx" style="height:28px;border-color:var(--green);background:rgba(61,219,138,0.15)">
+              <div style="position:absolute;top:30%;width:100%;height:2px;background:var(--accent)"></div>
+            </div>
+            <div style="width:1px;height:12px;background:var(--green)"></div>
+          </div>
+        </div>
+      </div>
+      <div class="chart-body">
+        <div class="chart-name">Box Plot</div>
+        <div class="chart-desc">Summarizes distribution using median, quartiles, and outliers across categories.</div>
+        <div class="chart-meta">
+          <span class="badge mpl">Matplotlib</span>
+          <span class="badge sns">Seaborn</span>
+          <span class="badge when">Compare distributions</span>
+        </div>
+        <div class="code-block"><span class="cm"># Matplotlib</span>
+<span class="nm">plt</span>.<span class="fn">boxplot</span>(data, labels=labels)
+
+<span class="cm"># Seaborn (easier multi-group)</span>
+<span class="nm">sns</span>.<span class="fn">boxplot</span>(data=df, x=<span class="st">'category'</span>, y=<span class="st">'value'</span>,
+            hue=<span class="st">'group'</span>, palette=<span class="st">'Set2'</span>)</div>
+      </div>
+    </div>
+
+    <!-- VIOLIN PLOT -->
+    <div class="chart-card">
+      <div class="chart-preview" style="background:linear-gradient(135deg,#15101f,#0f0d1a);">
+        <div class="vis-violin">
+          <div class="vn" style="background:var(--sns)"></div>
+          <div class="vn" style="background:var(--mpl);height:55px;border-radius:50%/20% 20% 80% 80%"></div>
+          <div class="vn" style="background:var(--accent);height:80px"></div>
+        </div>
+      </div>
+      <div class="chart-body">
+        <div class="chart-name">Violin Plot</div>
+        <div class="chart-desc">Like a box plot but also shows the probability density — great for multimodal data.</div>
+        <div class="chart-meta">
+          <span class="badge mpl">Matplotlib</span>
+          <span class="badge sns">Seaborn</span>
+          <span class="badge when">Distribution shape</span>
+        </div>
+        <div class="code-block"><span class="cm"># Matplotlib</span>
+<span class="nm">plt</span>.<span class="fn">violinplot</span>(data, positions, showmedians=<span class="kw">True</span>)
+
+<span class="cm"># Seaborn (much simpler)</span>
+<span class="nm">sns</span>.<span class="fn">violinplot</span>(data=df, x=<span class="st">'group'</span>, y=<span class="st">'value'</span>,
+               inner=<span class="st">'box'</span>)</div>
+      </div>
+    </div>
+
+    <!-- HEATMAP -->
+    <div class="chart-card">
+      <div class="chart-preview" style="background:linear-gradient(135deg,#0a0f1a,#080d14);">
+        <svg viewBox="0 0 220 105" style="width:92%;height:95px;display:block">
+          <!-- 4x4 heatmap cells with coolwarm-like colors -->
+          <!-- Row 0 -->
+          <rect x="30" y="8"  width="40" height="22" rx="2" fill="#2166ac"/><text x="50" y="23" text-anchor="middle" font-size="8" fill="white" font-family="monospace">1.00</text>
+          <rect x="74" y="8"  width="40" height="22" rx="2" fill="#6baed6"/><text x="94" y="23" text-anchor="middle" font-size="8" fill="white" font-family="monospace">0.62</text>
+          <rect x="118" y="8" width="40" height="22" rx="2" fill="#f4a582"/><text x="138" y="23" text-anchor="middle" font-size="8" fill="#333" font-family="monospace">-0.31</text>
+          <rect x="162" y="8" width="40" height="22" rx="2" fill="#d6604d"/><text x="182" y="23" text-anchor="middle" font-size="8" fill="white" font-family="monospace">-0.74</text>
+          <!-- Row 1 -->
+          <rect x="30" y="34" width="40" height="22" rx="2" fill="#6baed6"/><text x="50" y="49" text-anchor="middle" font-size="8" fill="white" font-family="monospace">0.62</text>
+          <rect x="74" y="34" width="40" height="22" rx="2" fill="#2166ac"/><text x="94" y="49" text-anchor="middle" font-size="8" fill="white" font-family="monospace">1.00</text>
+          <rect x="118" y="34" width="40" height="22" rx="2" fill="#f7f7f7"/><text x="138" y="49" text-anchor="middle" font-size="8" fill="#333" font-family="monospace">0.05</text>
+          <rect x="162" y="34" width="40" height="22" rx="2" fill="#f4a582"/><text x="182" y="49" text-anchor="middle" font-size="8" fill="#333" font-family="monospace">-0.40</text>
+          <!-- Row 2 -->
+          <rect x="30" y="60" width="40" height="22" rx="2" fill="#f4a582"/><text x="50" y="75" text-anchor="middle" font-size="8" fill="#333" font-family="monospace">-0.31</text>
+          <rect x="74" y="60" width="40" height="22" rx="2" fill="#f7f7f7"/><text x="94" y="75" text-anchor="middle" font-size="8" fill="#333" font-family="monospace">0.05</text>
+          <rect x="118" y="60" width="40" height="22" rx="2" fill="#2166ac"/><text x="138" y="75" text-anchor="middle" font-size="8" fill="white" font-family="monospace">1.00</text>
+          <rect x="162" y="60" width="40" height="22" rx="2" fill="#6baed6"/><text x="182" y="75" text-anchor="middle" font-size="8" fill="white" font-family="monospace">0.55</text>
+          <!-- Color bar on right side -->
+          <defs>
+            <linearGradient id="cbar" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"   stop-color="#2166ac"/>
+              <stop offset="50%"  stop-color="#f7f7f7"/>
+              <stop offset="100%" stop-color="#d6604d"/>
+            </linearGradient>
+          </defs>
+          <rect x="208" y="8" width="8" height="74" rx="2" fill="url(#cbar)"/>
+          <!-- axis labels -->
+          <text x="50"  y="97" text-anchor="middle" font-size="7" fill="rgba(136,136,170,0.8)" font-family="monospace">A</text>
+          <text x="94"  y="97" text-anchor="middle" font-size="7" fill="rgba(136,136,170,0.8)" font-family="monospace">B</text>
+          <text x="138" y="97" text-anchor="middle" font-size="7" fill="rgba(136,136,170,0.8)" font-family="monospace">C</text>
+          <text x="182" y="97" text-anchor="middle" font-size="7" fill="rgba(136,136,170,0.8)" font-family="monospace">D</text>
+        </svg>
+      </div>
+      <div class="chart-body">
+        <div class="chart-name">Heatmap</div>
+        <div class="chart-desc">Visualizes a 2D matrix of values using color intensity — perfect for correlation matrices.</div>
+        <div class="chart-meta">
+          <span class="badge sns">Seaborn</span>
+          <span class="badge when">Correlation matrix</span>
+          <span class="badge when">2D grid data</span>
+        </div>
+        <div class="code-block"><span class="cm"># Seaborn (native, best choice)</span>
+corr = df.<span class="fn">corr</span>()
+<span class="nm">sns</span>.<span class="fn">heatmap</span>(corr, annot=<span class="kw">True</span>, fmt=<span class="st">".2f"</span>,
+            cmap=<span class="st">'coolwarm'</span>, vmin=-<span class="st">1</span>, vmax=<span class="st">1</span>)
+
+<span class="cm"># Matplotlib (manual)</span>
+<span class="nm">plt</span>.<span class="fn">imshow</span>(matrix, cmap=<span class="st">'viridis'</span>)
+<span class="nm">plt</span>.<span class="fn">colorbar</span>()</div>
+      </div>
+    </div>
+
+    <!-- PIE CHART -->
+    <div class="chart-card">
+      <div class="chart-preview" style="background:linear-gradient(135deg,#0f1020,#0d0d18);align-items:center;justify-content:center;">
+        <div class="vis-pie"></div>
+      </div>
+      <div class="chart-body">
+        <div class="chart-name">Pie / Donut Chart</div>
+        <div class="chart-desc">Shows part-to-whole relationships. Use sparingly — bar charts are usually clearer.</div>
+        <div class="chart-meta">
+          <span class="badge mpl">Matplotlib</span>
+          <span class="badge when">Part-to-whole</span>
+        </div>
+        <div class="code-block"><span class="cm"># Matplotlib only (Seaborn lacks native pie)</span>
+<span class="nm">plt</span>.<span class="fn">pie</span>(sizes, labels=labels,
+       autopct=<span class="st">'%1.1f%%'</span>, startangle=<span class="st">90</span>)
+
+<span class="cm"># Donut: add a white center circle</span>
+circle = plt.Circle((<span class="st">0</span>,<span class="st">0</span>), <span class="st">0.5</span>, color=<span class="st">'white'</span>)
+plt.gca().add_patch(circle)</div>
+      </div>
+    </div>
+
+    <!-- PAIR PLOT -->
+    <div class="chart-card">
+      <div class="chart-preview" style="background:linear-gradient(135deg,#15101f,#100d1a);">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;padding:12px;width:100%">
+          <div style="background:rgba(232,67,147,0.3);height:28px;border-radius:3px"></div>
+          <div style="background:rgba(17,168,205,0.2);height:28px;border-radius:3px"></div>
+          <div style="background:rgba(245,200,66,0.2);height:28px;border-radius:3px"></div>
+          <div style="background:rgba(17,168,205,0.2);height:28px;border-radius:3px"></div>
+          <div style="background:rgba(232,67,147,0.3);height:28px;border-radius:3px"></div>
+          <div style="background:rgba(61,219,138,0.2);height:28px;border-radius:3px"></div>
+          <div style="background:rgba(245,200,66,0.2);height:28px;border-radius:3px"></div>
+          <div style="background:rgba(61,219,138,0.2);height:28px;border-radius:3px"></div>
+          <div style="background:rgba(232,67,147,0.3);height:28px;border-radius:3px"></div>
+        </div>
+      </div>
+      <div class="chart-body">
+        <div class="chart-name">Pair Plot</div>
+        <div class="chart-desc">Matrix of scatter plots for every pair of numeric variables. EDA powerhouse.</div>
+        <div class="chart-meta">
+          <span class="badge sns">Seaborn</span>
+          <span class="badge when">Exploratory Analysis</span>
+        </div>
+        <div class="code-block"><span class="cm"># Seaborn — one line!</span>
+<span class="nm">sns</span>.<span class="fn">pairplot</span>(df, hue=<span class="st">'species'</span>,
+             diag_kind=<span class="st">'kde'</span>)
+
+<span class="cm"># With regression lines</span>
+<span class="nm">sns</span>.<span class="fn">pairplot</span>(df, kind=<span class="st">'reg'</span>)</div>
+      </div>
+    </div>
+
+    <!-- KDE PLOT -->
+    <div class="chart-card">
+      <div class="chart-preview" style="background:linear-gradient(135deg,#0a1520,#0d1020);">
+        <svg viewBox="0 0 200 80" style="width:90%;height:70px">
+          <path d="M10,70 Q50,70 70,20 Q90,-10 110,20 Q130,50 150,70 L200,70" fill="rgba(232,67,147,0.2)" stroke="var(--sns)" stroke-width="2" fill-opacity="0.4"/>
+          <path d="M10,70 Q40,70 80,30 Q110,5 140,30 Q160,50 190,70" fill="rgba(17,168,205,0.2)" stroke="var(--mpl)" stroke-width="2" fill-opacity="0.3" stroke-dasharray="5,3"/>
+        </svg>
+      </div>
+      <div class="chart-body">
+        <div class="chart-name">KDE Plot</div>
+        <div class="chart-desc">Smooth, continuous estimate of a distribution — a polished alternative to histograms.</div>
+        <div class="chart-meta">
+          <span class="badge sns">Seaborn</span>
+          <span class="badge when">Smooth distribution</span>
+        </div>
+        <div class="code-block"><span class="cm"># Seaborn</span>
+<span class="nm">sns</span>.<span class="fn">kdeplot</span>(data=df, x=<span class="st">'value'</span>,
+            hue=<span class="st">'group'</span>, fill=<span class="kw">True</span>)
+
+<span class="cm"># 2D KDE (density contour map)</span>
+<span class="nm">sns</span>.<span class="fn">kdeplot</span>(data=df, x=<span class="st">'x'</span>, y=<span class="st">'y'</span>,
+            fill=<span class="kw">True</span>, cmap=<span class="st">'Blues'</span>)</div>
+      </div>
+    </div>
+
+    <!-- REGRESSION PLOT -->
+    <div class="chart-card">
+      <div class="chart-preview" style="background:linear-gradient(135deg,#0d1020,#151020);">
+        <svg viewBox="0 0 200 80" style="width:90%;height:70px">
+          <circle cx="20" cy="60" r="4" fill="var(--mpl)" opacity="0.7"/>
+          <circle cx="45" cy="50" r="4" fill="var(--mpl)" opacity="0.7"/>
+          <circle cx="70" cy="42" r="4" fill="var(--mpl)" opacity="0.7"/>
+          <circle cx="95" cy="30" r="4" fill="var(--mpl)" opacity="0.7"/>
+          <circle cx="120" cy="25" r="4" fill="var(--mpl)" opacity="0.7"/>
+          <circle cx="145" cy="15" r="4" fill="var(--mpl)" opacity="0.7"/>
+          <circle cx="170" cy="12" r="4" fill="var(--mpl)" opacity="0.7"/>
+          <line x1="10" y1="68" x2="185" y2="8" stroke="var(--sns)" stroke-width="2" opacity="0.8"/>
+          <path d="M10,72 Q100,50 185,4 L185,12 Q100,58 10,76 Z" fill="rgba(232,67,147,0.12)"/>
+        </svg>
+      </div>
+      <div class="chart-body">
+        <div class="chart-name">Regression Plot</div>
+        <div class="chart-desc">Scatter plot with a fitted regression line and confidence interval band.</div>
+        <div class="chart-meta">
+          <span class="badge sns">Seaborn</span>
+          <span class="badge when">Linear relationship</span>
+        </div>
+        <div class="code-block"><span class="cm"># Seaborn — includes CI band</span>
+<span class="nm">sns</span>.<span class="fn">regplot</span>(data=df, x=<span class="st">'x'</span>, y=<span class="st">'y'</span>,
+            ci=<span class="st">95</span>, scatter_kws={<span class="st">'alpha'</span>:<span class="st">0.5</span>})
+
+<span class="cm"># With faceting by category</span>
+<span class="nm">sns</span>.<span class="fn">lmplot</span>(data=df, x=<span class="st">'x'</span>, y=<span class="st">'y'</span>,
+           hue=<span class="st">'group'</span>)</div>
+      </div>
+    </div>
+
+    <!-- STACKED BAR -->
+    <div class="chart-card">
+      <div class="chart-preview" style="background:linear-gradient(135deg,#0d1020,#0a0c18);">
+        <svg viewBox="0 0 220 105" style="width:92%;height:95px;display:block">
+          <!-- Stacked bars: 3 groups, 3 segments each -->
+          <!-- Bar 1 (Q1) -->
+          <rect x="18"  y="28" width="38" height="22" rx="0" fill="#11a8cd"/>
+          <rect x="18"  y="50" width="38" height="20" rx="0" fill="#f5c842"/>
+          <rect x="18"  y="70" width="38" height="18" rx="0" fill="rgba(232,67,147,0.85)"/>
+          <rect x="18"  y="28" width="38" height="60" rx="3" fill="none" stroke="rgba(0,0,0,0.2)" stroke-width="0.5"/>
+          <text x="37" y="23" text-anchor="middle" font-size="8" fill="rgba(136,136,170,0.9)" font-family="monospace">Q1</text>
+          <!-- Bar 2 (Q2) -->
+          <rect x="66"  y="18" width="38" height="28" rx="0" fill="#11a8cd"/>
+          <rect x="66"  y="46" width="38" height="24" rx="0" fill="#f5c842"/>
+          <rect x="66"  y="70" width="38" height="18" rx="0" fill="rgba(232,67,147,0.85)"/>
+          <rect x="66"  y="18" width="38" height="70" rx="3" fill="none" stroke="rgba(0,0,0,0.2)" stroke-width="0.5"/>
+          <text x="85" y="13" text-anchor="middle" font-size="8" fill="rgba(136,136,170,0.9)" font-family="monospace">Q2</text>
+          <!-- Bar 3 (Q3) -->
+          <rect x="114" y="35" width="38" height="18" rx="0" fill="#11a8cd"/>
+          <rect x="114" y="53" width="38" height="17" rx="0" fill="#f5c842"/>
+          <rect x="114" y="70" width="38" height="18" rx="0" fill="rgba(232,67,147,0.85)"/>
+          <rect x="114" y="35" width="38" height="53" rx="3" fill="none" stroke="rgba(0,0,0,0.2)" stroke-width="0.5"/>
+          <text x="133" y="30" text-anchor="middle" font-size="8" fill="rgba(136,136,170,0.9)" font-family="monospace">Q3</text>
+          <!-- Bar 4 (Q4) -->
+          <rect x="162" y="22" width="38" height="32" rx="0" fill="#11a8cd"/>
+          <rect x="162" y="54" width="38" height="16" rx="0" fill="#f5c842"/>
+          <rect x="162" y="70" width="38" height="18" rx="0" fill="rgba(232,67,147,0.85)"/>
+          <rect x="162" y="22" width="38" height="66" rx="3" fill="none" stroke="rgba(0,0,0,0.2)" stroke-width="0.5"/>
+          <text x="181" y="17" text-anchor="middle" font-size="8" fill="rgba(136,136,170,0.9)" font-family="monospace">Q4</text>
+          <!-- baseline -->
+          <line x1="10" y1="89" x2="210" y2="89" stroke="rgba(136,136,170,0.3)" stroke-width="1"/>
+          <!-- legend dots -->
+          <rect x="18"  y="96" width="8" height="6" rx="1" fill="#11a8cd"/>
+          <text x="29" y="102" font-size="7" fill="rgba(136,136,170,0.8)" font-family="monospace">A</text>
+          <rect x="50"  y="96" width="8" height="6" rx="1" fill="#f5c842"/>
+          <text x="61" y="102" font-size="7" fill="rgba(136,136,170,0.8)" font-family="monospace">B</text>
+          <rect x="82"  y="96" width="8" height="6" rx="1" fill="rgba(232,67,147,0.85)"/>
+          <text x="93" y="102" font-size="7" fill="rgba(136,136,170,0.8)" font-family="monospace">C</text>
+        </svg>
+      </div>
+      <div class="chart-body">
+        <div class="chart-name">Stacked Bar Chart</div>
+        <div class="chart-desc">Bar chart showing sub-group composition within each category simultaneously.</div>
+        <div class="chart-meta">
+          <span class="badge mpl">Matplotlib</span>
+          <span class="badge sns">Seaborn</span>
+          <span class="badge when">Part-to-whole per group</span>
+        </div>
+        <div class="code-block"><span class="cm"># Matplotlib</span>
+<span class="nm">plt</span>.<span class="fn">bar</span>(x, val1, label=<span class="st">'A'</span>)
+<span class="nm">plt</span>.<span class="fn">bar</span>(x, val2, bottom=val1, label=<span class="st">'B'</span>)
+
+<span class="cm"># Seaborn via pandas + matplotlib</span>
+df.<span class="fn">plot</span>(kind=<span class="st">'bar'</span>, stacked=<span class="kw">True</span>)</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- DATA COMBINATION MATRIX -->
+<section id="datamatrix">
+  <p class="section-label">03 — Data Type Guide</p>
+  <h2 class="section-title">Which Chart for Which Data?</h2>
+  <p style="color:var(--muted);margin-bottom:36px;font-size:0.95rem;max-width:680px">Every dataset has a data type combination on X and Y axes. Pick the right chart by matching your data types below.</p>
+
+  <!-- Legend -->
+  <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:28px;align-items:center">
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted)">Data Types:</span>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:4px 12px;border-radius:4px;background:rgba(17,168,205,0.15);color:var(--mpl);border:1px solid rgba(17,168,205,0.3)">NUM — Numerical (continuous)</span>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:4px 12px;border-radius:4px;background:rgba(232,67,147,0.15);color:var(--sns);border:1px solid rgba(232,67,147,0.3)">CAT — Categorical (discrete)</span>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:4px 12px;border-radius:4px;background:rgba(245,200,66,0.12);color:var(--accent);border:1px solid rgba(245,200,66,0.3)">TIME — Time / Ordered sequence</span>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:4px 12px;border-radius:4px;background:rgba(61,219,138,0.12);color:var(--green);border:1px solid rgba(61,219,138,0.3)">NONE — Single variable only</span>
+  </div>
+
+  <!-- Matrix cards -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:18px;margin-bottom:20px">
+
+    <!-- NUM vs NUM -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden">
+      <div style="padding:14px 18px;background:rgba(17,168,205,0.08);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 8px;border-radius:4px;background:rgba(17,168,205,0.15);color:var(--mpl);border:1px solid rgba(17,168,205,0.3)">NUM</span>
+        <span style="color:var(--muted);font-size:12px">×</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 8px;border-radius:4px;background:rgba(17,168,205,0.15);color:var(--mpl);border:1px solid rgba(17,168,205,0.3)">NUM</span>
+        <span style="margin-left:auto;font-family:'Syne',sans-serif;font-size:0.8rem;font-weight:700;color:var(--text)">Numerical vs Numerical</span>
+      </div>
+      <div style="padding:16px 18px">
+        <p style="color:var(--muted);font-size:0.82rem;margin-bottom:12px">Two continuous numbers — find relationships, trends, clusters.</p>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:2px 8px;border-radius:3px;background:rgba(17,168,205,0.1);color:var(--mpl);white-space:nowrap;margin-top:2px">Scatter</span>
+            <span style="font-size:0.83rem;color:var(--muted)">Show relationship & correlation between two numeric columns (e.g. height vs weight)</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:2px 8px;border-radius:3px;background:rgba(17,168,205,0.1);color:var(--mpl);white-space:nowrap;margin-top:2px">Regression</span>
+            <span style="font-size:0.83rem;color:var(--muted)">Scatter + trend line — shows direction & strength of linear relationship</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:2px 8px;border-radius:3px;background:rgba(17,168,205,0.1);color:var(--mpl);white-space:nowrap;margin-top:2px">2D KDE</span>
+            <span style="font-size:0.83rem;color:var(--muted)">Density of points in 2D space — great for large datasets with overlap</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:2px 8px;border-radius:3px;background:rgba(17,168,205,0.1);color:var(--mpl);white-space:nowrap;margin-top:2px">Heatmap</span>
+            <span style="font-size:0.83rem;color:var(--muted)">Correlation matrix across many numeric columns at once (sns.heatmap on df.corr())</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CAT vs NUM -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden">
+      <div style="padding:14px 18px;background:rgba(232,67,147,0.07);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 8px;border-radius:4px;background:rgba(232,67,147,0.15);color:var(--sns);border:1px solid rgba(232,67,147,0.3)">CAT</span>
+        <span style="color:var(--muted);font-size:12px">×</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 8px;border-radius:4px;background:rgba(17,168,205,0.15);color:var(--mpl);border:1px solid rgba(17,168,205,0.3)">NUM</span>
+        <span style="margin-left:auto;font-family:'Syne',sans-serif;font-size:0.8rem;font-weight:700;color:var(--text)">Categorical vs Numerical</span>
+      </div>
+      <div style="padding:16px 18px">
+        <p style="color:var(--muted);font-size:0.82rem;margin-bottom:12px">Compare a number across groups — the most common chart scenario.</p>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:2px 8px;border-radius:3px;background:rgba(232,67,147,0.1);color:var(--sns);white-space:nowrap;margin-top:2px">Bar</span>
+            <span style="font-size:0.83rem;color:var(--muted)">Compare aggregate values (mean/sum) across groups (e.g. avg salary per dept)</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:2px 8px;border-radius:3px;background:rgba(232,67,147,0.1);color:var(--sns);white-space:nowrap;margin-top:2px">Box Plot</span>
+            <span style="font-size:0.83rem;color:var(--muted)">Show spread, median, outliers per group — great for spotting skew</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:2px 8px;border-radius:3px;background:rgba(232,67,147,0.1);color:var(--sns);white-space:nowrap;margin-top:2px">Violin</span>
+            <span style="font-size:0.83rem;color:var(--muted)">Box plot + density curve — reveals if distribution is bimodal or skewed</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:2px 8px;border-radius:3px;background:rgba(232,67,147,0.1);color:var(--sns);white-space:nowrap;margin-top:2px">Strip / Swarm</span>
+            <span style="font-size:0.83rem;color:var(--muted)">Plot every data point per group — use for small datasets to avoid hiding data</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CAT vs CAT -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden">
+      <div style="padding:14px 18px;background:rgba(232,67,147,0.07);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 8px;border-radius:4px;background:rgba(232,67,147,0.15);color:var(--sns);border:1px solid rgba(232,67,147,0.3)">CAT</span>
+        <span style="color:var(--muted);font-size:12px">×</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 8px;border-radius:4px;background:rgba(232,67,147,0.15);color:var(--sns);border:1px solid rgba(232,67,147,0.3)">CAT</span>
+        <span style="margin-left:auto;font-family:'Syne',sans-serif;font-size:0.8rem;font-weight:700;color:var(--text)">Categorical vs Categorical</span>
+      </div>
+      <div style="padding:16px 18px">
+        <p style="color:var(--muted);font-size:0.82rem;margin-bottom:12px">Two category columns — compare proportions or counts across groups.</p>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:2px 8px;border-radius:3px;background:rgba(232,67,147,0.1);color:var(--sns);white-space:nowrap;margin-top:2px">Grouped Bar</span>
+            <span style="font-size:0.83rem;color:var(--muted)">Side-by-side bars for each sub-category (e.g. gender vs department count)</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:2px 8px;border-radius:3px;background:rgba(232,67,147,0.1);color:var(--sns);white-space:nowrap;margin-top:2px">Stacked Bar</span>
+            <span style="font-size:0.83rem;color:var(--muted)">Show composition — how sub-groups make up each main category</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:2px 8px;border-radius:3px;background:rgba(232,67,147,0.1);color:var(--sns);white-space:nowrap;margin-top:2px">Pie / Donut</span>
+            <span style="font-size:0.83rem;color:var(--muted)">Part-to-whole for a single category — keep to ≤5 slices for clarity</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:2px 8px;border-radius:3px;background:rgba(232,67,147,0.1);color:var(--sns);white-space:nowrap;margin-top:2px">Heatmap (count)</span>
+            <span style="font-size:0.83rem;color:var(--muted)">Pivot table as color grid — show frequency of every CAT×CAT combination</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIME vs NUM -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden">
+      <div style="padding:14px 18px;background:rgba(245,200,66,0.06);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 8px;border-radius:4px;background:rgba(245,200,66,0.12);color:var(--accent);border:1px solid rgba(245,200,66,0.3)">TIME</span>
+        <span style="color:var(--muted);font-size:12px">×</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 8px;border-radius:4px;background:rgba(17,168,205,0.15);color:var(--mpl);border:1px solid rgba(17,168,205,0.3)">NUM</span>
+        <span style="margin-left:auto;font-family:'Syne',sans-serif;font-size:0.8rem;font-weight:700;color:var(--text)">Time vs Numerical</span>
+      </div>
+      <div style="padding:16px 18px">
+        <p style="color:var(--muted);font-size:0.82rem;margin-bottom:12px">A number changing over time — show trends, cycles, seasonality.</p>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:2px 8px;border-radius:3px;background:rgba(245,200,66,0.1);color:var(--accent);white-space:nowrap;margin-top:2px">Line Chart</span>
+            <span style="font-size:0.83rem;color:var(--muted)">Best for continuous time series — shows trend, peaks, valleys (e.g. stock price)</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:2px 8px;border-radius:3px;background:rgba(245,200,66,0.1);color:var(--accent);white-space:nowrap;margin-top:2px">Area Chart</span>
+            <span style="font-size:0.83rem;color:var(--muted)">Line chart with filled area — emphasizes magnitude of change over time</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:2px 8px;border-radius:3px;background:rgba(245,200,66,0.1);color:var(--accent);white-space:nowrap;margin-top:2px">Bar (time)</span>
+            <span style="font-size:0.83rem;color:var(--muted)">Good for discrete time intervals (monthly, yearly) — easier to compare exact values</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:2px 8px;border-radius:3px;background:rgba(245,200,66,0.1);color:var(--accent);white-space:nowrap;margin-top:2px">Multi-line</span>
+            <span style="font-size:0.83rem;color:var(--muted)">Compare multiple groups over time (sns.lineplot with hue= parameter)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NONE (Single variable) -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden">
+      <div style="padding:14px 18px;background:rgba(61,219,138,0.06);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 8px;border-radius:4px;background:rgba(61,219,138,0.12);color:var(--green);border:1px solid rgba(61,219,138,0.3)">NONE</span>
+        <span style="color:var(--muted);font-size:12px">×</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 8px;border-radius:4px;background:rgba(17,168,205,0.15);color:var(--mpl);border:1px solid rgba(17,168,205,0.3)">NUM</span>
+        <span style="margin-left:auto;font-family:'Syne',sans-serif;font-size:0.8rem;font-weight:700;color:var(--text)">Single Numerical Variable</span>
+      </div>
+      <div style="padding:16px 18px">
+        <p style="color:var(--muted);font-size:0.82rem;margin-bottom:12px">Understand how one numeric column is distributed — shape, spread, skew.</p>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:2px 8px;border-radius:3px;background:rgba(61,219,138,0.1);color:var(--green);white-space:nowrap;margin-top:2px">Histogram</span>
+            <span style="font-size:0.83rem;color:var(--muted)">See the shape of distribution — is it normal, skewed, bimodal?</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:2px 8px;border-radius:3px;background:rgba(61,219,138,0.1);color:var(--green);white-space:nowrap;margin-top:2px">KDE Plot</span>
+            <span style="font-size:0.83rem;color:var(--muted)">Smooth version of histogram — easier to compare between groups</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:2px 8px;border-radius:3px;background:rgba(61,219,138,0.1);color:var(--green);white-space:nowrap;margin-top:2px">Box Plot</span>
+            <span style="font-size:0.83rem;color:var(--muted)">Summary statistics at a glance — median, IQR, outliers instantly visible</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:2px 8px;border-radius:3px;background:rgba(61,219,138,0.1);color:var(--green);white-space:nowrap;margin-top:2px">Rug Plot</span>
+            <span style="font-size:0.83rem;color:var(--muted)">Tick marks for every data point on an axis — shows exact data density</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Many NUM (Pair plot) -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden">
+      <div style="padding:14px 18px;background:rgba(17,168,205,0.06);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 8px;border-radius:4px;background:rgba(17,168,205,0.15);color:var(--mpl);border:1px solid rgba(17,168,205,0.3)">NUM</span>
+        <span style="color:var(--muted);font-size:12px">×</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 8px;border-radius:4px;background:rgba(17,168,205,0.15);color:var(--mpl);border:1px solid rgba(17,168,205,0.3)">NUM ×N</span>
+        <span style="margin-left:auto;font-family:'Syne',sans-serif;font-size:0.8rem;font-weight:700;color:var(--text)">Many Numerical Variables</span>
+      </div>
+      <div style="padding:16px 18px">
+        <p style="color:var(--muted);font-size:0.82rem;margin-bottom:12px">Explore relationships across ALL numeric columns at once — EDA mode.</p>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:2px 8px;border-radius:3px;background:rgba(17,168,205,0.1);color:var(--mpl);white-space:nowrap;margin-top:2px">Pair Plot</span>
+            <span style="font-size:0.83rem;color:var(--muted)">Grid of scatter plots — every column vs every other. Best first step in EDA</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:2px 8px;border-radius:3px;background:rgba(17,168,205,0.1);color:var(--mpl);white-space:nowrap;margin-top:2px">Corr Heatmap</span>
+            <span style="font-size:0.83rem;color:var(--muted)">Correlation matrix as a colored grid — quickly find which columns are related</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:2px 8px;border-radius:3px;background:rgba(17,168,205,0.1);color:var(--mpl);white-space:nowrap;margin-top:2px">Parallel Coords</span>
+            <span style="font-size:0.83rem;color:var(--muted)">Compare multiple dimensions simultaneously for multi-class pattern detection</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Quick reference summary table -->
+  <div style="margin-top:16px;overflow-x:auto;border-radius:14px;border:1px solid var(--border)">
+    <table>
+      <thead>
+        <tr>
+          <th style="min-width:110px">X Axis</th>
+          <th style="min-width:110px">Y Axis</th>
+          <th>Goal</th>
+          <th style="min-width:200px">Best Chart(s)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Categorical</td><td>Numerical</td><td style="color:var(--muted)">Compare group averages</td><td style="color:var(--green)">Bar Chart, Box Plot, Violin</td></tr>
+        <tr><td>Categorical</td><td>Categorical</td><td style="color:var(--muted)">Show composition / count</td><td style="color:var(--green)">Stacked Bar, Grouped Bar, Pie</td></tr>
+        <tr><td>Numerical</td><td>Numerical</td><td style="color:var(--muted)">Find correlation</td><td style="color:var(--green)">Scatter, Regression, 2D KDE</td></tr>
+        <tr><td>Time</td><td>Numerical</td><td style="color:var(--muted)">Show trend over time</td><td style="color:var(--green)">Line Chart, Area Chart</td></tr>
+        <tr><td>—</td><td>Numerical (1 col)</td><td style="color:var(--muted)">Understand distribution</td><td style="color:var(--green)">Histogram, KDE, Box Plot</td></tr>
+        <tr><td>—</td><td>Numerical (N cols)</td><td style="color:var(--muted)">Explore all relationships</td><td style="color:var(--green)">Pair Plot, Correlation Heatmap</td></tr>
+        <tr><td>Categorical</td><td>Numerical (multi-group)</td><td style="color:var(--muted)">Track across time & groups</td><td style="color:var(--green)">Multi-line, Grouped Bar</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- COMPARE TABLE -->
+<section id="compare">
+  <p class="section-label">04 — Head to Head</p>
+  <h2 class="section-title">Matplotlib <span style="color:var(--muted)">vs</span> Seaborn</h2>
+
+  <div class="compare-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th class="mpl-h">Matplotlib</th>
+          <th class="sns-h">Seaborn</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Level of abstraction</td>
+          <td>Low — explicit control of every element</td>
+          <td>High — handles layout automatically</td>
+        </tr>
+        <tr>
+          <td>Code verbosity</td>
+          <td>More lines needed for same result</td>
+          <td>Much less code, faster to prototype</td>
+        </tr>
+        <tr>
+          <td>Default aesthetics</td>
+          <td class="neutral">Plain, functional defaults</td>
+          <td class="check">Publication-ready themes built in</td>
+        </tr>
+        <tr>
+          <td>DataFrame support</td>
+          <td class="neutral">Manual — pass arrays/lists</td>
+          <td class="check">Native Pandas DataFrame integration</td>
+        </tr>
+        <tr>
+          <td>Statistical plots</td>
+          <td class="neutral">Manual computation required</td>
+          <td class="check">Built-in: CI, KDE, regression, etc.</td>
+        </tr>
+        <tr>
+          <td>Heatmap</td>
+          <td class="neutral">plt.imshow() — manual</td>
+          <td class="check">sns.heatmap() — one line</td>
+        </tr>
+        <tr>
+          <td>Pair plot</td>
+          <td class="cross">Not available natively</td>
+          <td class="check">sns.pairplot() built-in</td>
+        </tr>
+        <tr>
+          <td>Pie chart</td>
+          <td class="check">plt.pie() native</td>
+          <td class="cross">No native pie chart</td>
+        </tr>
+        <tr>
+          <td>3D plotting</td>
+          <td class="check">mpl_toolkits.mplot3d</td>
+          <td class="cross">Not supported</td>
+        </tr>
+        <tr>
+          <td>Animation</td>
+          <td class="check">FuncAnimation supported</td>
+          <td class="cross">Not supported</td>
+        </tr>
+        <tr>
+          <td>Customization</td>
+          <td class="check">Unlimited fine-grained control</td>
+          <td class="neutral">Good but limited deep customization</td>
+        </tr>
+        <tr>
+          <td>Learning curve</td>
+          <td class="neutral">Steeper — more concepts to learn</td>
+          <td class="check">Gentle — intuitive API</td>
+        </tr>
+        <tr>
+          <td>Used together</td>
+          <td colspan="2" style="color:var(--accent);text-align:center">✓ Yes! sns plots are matplotlib objects — plt.title(), plt.savefig() work on both</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- WHEN TO USE -->
+<section id="decide">
+  <p class="section-label">05 — Decision Guide</p>
+  <h2 class="section-title">When to Use Which</h2>
+
+  <div class="decision-grid">
+    <div class="decision-card use-mpl">
+      <h4>▸ Use Matplotlib when…</h4>
+      <ul>
+        <li>You need full pixel-level control over the chart</li>
+        <li>Creating animations or interactive plots</li>
+        <li>Embedding charts in desktop GUIs (Tkinter, Qt)</li>
+        <li>Building 3D visualizations</li>
+        <li>Making pie/donut charts</li>
+        <li>Your data isn't in a Pandas DataFrame</li>
+        <li>You need a chart type Seaborn doesn't support</li>
+        <li>Publication figures with custom layout</li>
+      </ul>
+    </div>
+    <div class="decision-card use-sns">
+      <h4>▸ Use Seaborn when…</h4>
+      <ul>
+        <li>Working with a Pandas DataFrame</li>
+        <li>Exploratory Data Analysis (EDA)</li>
+        <li>You want beautiful defaults quickly</li>
+        <li>Statistical visualizations (CI, KDE, regression)</li>
+        <li>Correlation heatmaps and pair plots</li>
+        <li>Comparing distributions across groups</li>
+        <li>Faceting / multi-panel plots by category</li>
+        <li>You want to write less code</li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="margin-top:32px; padding:28px; border-radius:14px; background:var(--surface); border:1px solid var(--border); border-left: 3px solid var(--accent);">
+    <p style="font-family:'Syne',sans-serif; font-size:1rem; font-weight:700; color:var(--accent); margin-bottom:10px">💡 Pro Tip: Use Both Together</p>
+    <p style="color:var(--muted); font-size:0.92rem;">Seaborn is built on Matplotlib — every Seaborn plot is a Matplotlib figure. Create your chart in Seaborn for speed and beauty, then fine-tune with Matplotlib commands.</p>
+    <div class="code-block" style="margin-top:16px"><span class="nm">sns</span>.<span class="fn">heatmap</span>(corr, annot=<span class="kw">True</span>)          <span class="cm"># Seaborn for the hard part</span>
+<span class="nm">plt</span>.<span class="fn">title</span>(<span class="st">"Correlation Matrix"</span>, fontsize=<span class="st">16</span>) <span class="cm"># Matplotlib to polish</span>
+<span class="nm">plt</span>.<span class="fn">tight_layout</span>()
+<span class="nm">plt</span>.<span class="fn">savefig</span>(<span class="st">"chart.png"</span>, dpi=<span class="st">300</span>)          <span class="cm"># Matplotlib to export</span></div>
+  </div>
+</section>
+
+<footer>
+  Built for Python Data Visualization learners &nbsp;·&nbsp; Matplotlib + Seaborn Guide &nbsp;·&nbsp; 2024
+</footer>
+
+</body>
+</html>
